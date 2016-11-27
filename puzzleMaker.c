@@ -97,7 +97,7 @@ void readfilesInDirs(const char *dirPath){
 		for( j = 0; j< numberOfCols * MAX_LEN ; j++ ){
 
 			fputc(data[i][j], fileDest);
-			if(j == 89){ 
+			if(j == (numberOfCols * MAX_LEN) - 1){ 
 				fputs("\n",fileDest);
 				//printf("\n"); //debug line
 			}
@@ -117,7 +117,7 @@ void readfilesInDirs(const char *dirPath){
 						
 			printf("%c",data[i][j]);
 			
-			if(j == 89){
+			if(j == (numberOfCols * MAX_LEN) - 1){
 
 				printf("\n");
 			}
@@ -145,7 +145,8 @@ void readfilesInDirs(const char *dirPath){
 
 void writeToDataArray(FILE *file,char data[][MAX_LEN * 3], int x, int y ){
 	if(file == NULL){
-		printf("is file open ??");	
+		printf("is file open ??");
+		exit(1);	
 	}
 	char c;
 	int i = 0;
@@ -221,7 +222,7 @@ void SortFileNames(char* names[][2], int length){
 int getNumberOfcolumns(char* names[][2], int length){
 	int numberOfRows = 0;
 	for(int i=0 ; i< length; i++){ 
-		char *rows = (char *)malloc(sizeof(char *) * 2);
+		char *rows = malloc(sizeof(char *) * 2);
 		strncpy(rows, names[i][0] + 5 ,1);
 		numberOfRows = atoi(rows) + 1; //starter på 0
 		free(rows);
@@ -233,7 +234,7 @@ int getNumberOfcolumns(char* names[][2], int length){
 int getNumberOfRows(char* names[][2], int length){
 	int numberOfCols = 0;
 	for(int i=0 ; i< length; i++){  
-		char *columns = (char *)malloc(sizeof(char *) * 2);
+		char *columns = malloc(sizeof(char *) * 2);
 		strncpy(columns, names[i][0] + 7 ,1);
 		numberOfCols = atoi(columns) + 1; //starter på 0
 		free(columns);
