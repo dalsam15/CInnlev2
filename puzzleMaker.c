@@ -7,7 +7,7 @@
 
 
 
-#include "thing.h"
+#include "puzzleMaker.h"
 
 #define MAX_LINE_LENGTH 1024
 #define MAX_LEN 30
@@ -20,21 +20,14 @@ void readfilesInDirs(const char *dirPath){
 	struct dirent* dirFile;
 	int counter = 0;
 
-
-	if (NULL == (dir = opendir (dirPath))) 
-	{
-		fprintf(stderr, "Error : Failed to open directory\n");
-
-	}
 	int numberOfItems = getNumberOfFilesInDir(dirPath);
 	char *FilenameList[numberOfItems][2];
+	dir = opendir(dirPath);
+	while ((dirFile = readdir(dir))){ //save filename and fullpath to pointer 2d array
 
-	while ((dirFile = readdir(dir))){ //lagre alle fil navn og full path i pointer 2d array
-
-		if (!strcmp (dirFile->d_name, "."))
+		if (!strcmp (dirFile->d_name, ".") ||!strcmp (dirFile->d_name, "..") ){
 			continue;
-		if (!strcmp (dirFile->d_name, ".."))    
-            		continue;
+		}
 
 		char *filenameAndPath = malloc(1 + strlen(dirFile->d_name)+ strlen(dirPath) );
 		char *filename = malloc(1 + strlen(dirFile->d_name)+ strlen(dirPath) );
@@ -43,8 +36,8 @@ void readfilesInDirs(const char *dirPath){
 		strcat(filenameAndPath,dirFile->d_name);
 		strcpy(filename,dirFile->d_name);
 
-		FilenameList[counter][1] =  (char *)malloc(sizeof(char *) * MAX_LINE_LENGTH);
-		FilenameList[counter][0] =  (char *)malloc(sizeof(char *) * MAX_LINE_LENGTH);
+		FilenameList[counter][1] =  malloc(sizeof(char *) * MAX_LINE_LENGTH);
+		FilenameList[counter][0] =  malloc(sizeof(char *) * MAX_LINE_LENGTH);
 
 		strcpy(FilenameList[counter][1], filenameAndPath);
 		strcpy(FilenameList[counter][0], filename);
@@ -55,17 +48,16 @@ void readfilesInDirs(const char *dirPath){
 
 	}
 	closedir(dir);
-	SortFileNames(FilenameList, counter);//sortere filnanvnene i riktig rekkefølge
-	int numberOfRows = getNumberOfRows(FilenameList,counter ); 
-	int numberOfCols = getNumberOfcolumns(FilenameList,counter);
+	SortFileNames(FilenameList, counter);//sort filenames
+	int numberOfRows = getNumberOfRows(FilenameList,counter ); //number of rows in puzzle
+	int numberOfCols = getNumberOfcolumns(FilenameList,counter); // number of colums in puzzle
 	FILE *filer[numberOfItems];
-	char data[numberOfRows *  MAX_LEN][numberOfCols * MAX_LEN ];
+	char data[numberOfRows *  MAX_LEN][numberOfCols * MAX_LEN ]; // puzzle data
 
 	
 	int i = 0;
 	int j = 0;
-	int num = 0;
-	printf("Rows = %d and columns = %d\n",numberOfRows, numberOfCols );
+	//printf("Rows = %d and columns = %d\n",numberOfRows, numberOfCols ); //debug line
 
 	for( i=0 ; i< numberOfItems; i++){  
 
@@ -73,7 +65,7 @@ void readfilesInDirs(const char *dirPath){
 
 	} 		
 
-	num = 0;
+	int num = 0;
 	char c;
 	int x = 0;
 	int y = 0;
@@ -91,11 +83,11 @@ void readfilesInDirs(const char *dirPath){
 
 
 
-	char *destFullPath = (char *)malloc(sizeof(char *) * MAX_LINE_LENGTH);
+	char *destFullPath = malloc(sizeof(char *) * MAX_LINE_LENGTH);
 	strcpy(destFullPath,dirPath );
 	destFullPath[strlen(destFullPath)-1] = 0;
 	strcat(destFullPath,"_merged.txt");
-	printf("Output file [%s] is in current directory.\n",destFullPath);
+	//printf("Output file [%s] is in current directory.\n",destFullPath); //debug line
 
 
 	FILE *fileDest = fopen(destFullPath, "w"); 
@@ -105,9 +97,9 @@ void readfilesInDirs(const char *dirPath){
 		for( j = 0; j< numberOfCols * MAX_LEN ; j++ ){
 
 			fputc(data[i][j], fileDest);
-			if(j == 89){
+			if(j == 89){ 
 				fputs("\n",fileDest);
-				//printf("\n");
+				//printf("\n"); //debug line
 			}
 
 		}
@@ -134,7 +126,7 @@ void readfilesInDirs(const char *dirPath){
 
 	} 
 
-	printf("The same output is merged in file : %s is in current directory.\n",destFullPath);
+	printf("The same output merged to file : %s in current directory.\n",destFullPath);
 	free(destFullPath);
 	deallocatePArray(FilenameList, numberOfItems);
 
@@ -174,22 +166,22 @@ void writeToDataArray(FILE *file,char data[][MAX_LEN * 3], int x, int y ){
 }
 
 
-int getNumberOfFilesInDir(const char *dirPath){
+int getNumberOfFilesInDir(const char *dirPath){ //validate folder and count files
 	int count = 0;
-	DIR* dir;
+	DIR* dir = opendir(dirPath);
 	struct dirent* dirFile;
 
-	if (NULL == (dir = opendir (dirPath))) 
-	{
-		fprintf(stderr, "Error : Failed to open directory\n");
+	if (dir == NULL){
+
+		printf("Error : Failed to open directory\n");
+		exit(1);
 
 	}
 	while ((dirFile = readdir(dir))){
 	
-		if (!strcmp (dirFile->d_name, "."))
+		if (!strcmp (dirFile->d_name, ".") ||!strcmp (dirFile->d_name, "..") ){
 			continue;
-		if (!strcmp (dirFile->d_name, ".."))    
-            		continue;
+		}
 		count++;
 	}
 	closedir(dir);
@@ -217,6 +209,8 @@ void SortFileNames(char* names[][2], int length){
 				names[i +1][0] = temp2;
 			}
 
+
+
 		}
 
 	}
@@ -226,7 +220,7 @@ void SortFileNames(char* names[][2], int length){
 
 int getNumberOfcolumns(char* names[][2], int length){
 	int numberOfRows = 0;
-	for(int i=0 ; i< length; i++){  // teller fremover
+	for(int i=0 ; i< length; i++){ 
 		char *rows = (char *)malloc(sizeof(char *) * 2);
 		strncpy(rows, names[i][0] + 5 ,1);
 		numberOfRows = atoi(rows) + 1; //starter på 0
@@ -238,7 +232,7 @@ int getNumberOfcolumns(char* names[][2], int length){
 
 int getNumberOfRows(char* names[][2], int length){
 	int numberOfCols = 0;
-	for(int i=0 ; i< length; i++){  // teller fremover
+	for(int i=0 ; i< length; i++){  
 		char *columns = (char *)malloc(sizeof(char *) * 2);
 		strncpy(columns, names[i][0] + 7 ,1);
 		numberOfCols = atoi(columns) + 1; //starter på 0

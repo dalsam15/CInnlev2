@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "thing.h"
+#include "puzzleMaker.h"
 
 int main(int argc, char *argv[]){
 
